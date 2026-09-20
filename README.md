@@ -34,7 +34,7 @@ CognitiveLens empowers analysts, data scientists, and AI practitioners to **visu
   Analyze bias patterns across demographics using both categorical and numeric features (with automatic quantile binning).  
 
 - **Confidence & Calibration Views**  
-  Examine probability distributions, Brier scores, and model calibration curves.  
+  Examine probability distributions and Brier scores for model confidence and calibration analysis.  
 
 - **Explainable AI Foundations**  
   Designed for integration with SHAP, LIME, and counterfactual interpretation workflows.  
@@ -53,7 +53,7 @@ flowchart LR
   C --> D["Prediction & Probability Estimation"]
   D --> E["Metrics Computation"]
   E --> F["Interactive Streamlit Dashboard"]
-  F --> G["Visualization: Fairness, ROC, Confusion, Calibration"]
+  F --> G["Visualization: Fairness, ROC, Confusion, Probability Views"]
   G --> H["Exports: Model and CSV Reports"]
 ```
 This architecture promotes modularity, enabling users to extend CognitiveLens with new model types or integrate it into custom MLOps pipelines.
@@ -83,7 +83,7 @@ This architecture promotes modularity, enabling users to extend CognitiveLens wi
 
 3. **Model Training**
    - Choose from Logistic Regression, Random Forest, or XGBoost (if installed).  
-   - Uses sklearn pipelines for full reproducibility.
+   - Uses sklearn pipelines for consistent preprocessing and model execution.
 
 4. **Evaluation**
    - Visual dashboards display metrics, ROC curves, confusion matrices, and fairness comparisons.  
@@ -104,7 +104,7 @@ This architecture promotes modularity, enabling users to extend CognitiveLens wi
 ### Model Confidence & Calibration
 | Visualization | Description |
 |---------------|--------------|
-|<img width="1281" height="450" alt="newplot(17)" src="https://github.com/user-attachments/assets/f42f5bf1-25ea-470f-b43f-5eaddf995f6c" />|Visualizes model output probabilities, showing calibration and certainty. |
+|<img width="1281" height="450" alt="newplot(17)" src="https://github.com/user-attachments/assets/f42f5bf1-25ea-470f-b43f-5eaddf995f6c" />|Visualizes the distribution of model output probabilities. |
 |<img width="1281" height="450" alt="newplot(16)" src="https://github.com/user-attachments/assets/8edf0c40-e265-41e7-ace4-40e53ca599f9" />|Demonstrates model discrimination power with AUC metric. |
 
 ### Classification Insight
@@ -119,14 +119,14 @@ This architecture promotes modularity, enabling users to extend CognitiveLens wi
 
 ```
 CognitiveLens/
-├── app.py                  # Core Streamlit app
-├── app_autobinning.py      # Extended version with auto-binning for fairness
+├── app.py                  # Core Streamlit app with auto-binning
 ├── data/
-│   ├── sample_decisions.csv
-│   └── human_judgments.csv
+│   └── sample_decisions.csv
 ├── requirements.txt
 └── README.md
 ```
+
+Survey Mode creates `data/human_judgments.csv` locally after the first submitted judgment.
 
 ---
 
@@ -134,8 +134,8 @@ CognitiveLens/
 
 ### Environment Setup
 ```bash
-git clone https://github.com/AmirhosseinHonardoust/cognitivelens.git
-cd cognitivelens
+git clone https://github.com/AmirhosseinHonardoust/Cognitivelens-AI-Human-Comparison.git
+cd Cognitivelens-AI-Human-Comparison
 python -m venv .venv
 .venv\Scripts\activate    # On Windows
 pip install -r requirements.txt
@@ -143,7 +143,7 @@ pip install -r requirements.txt
 
 ### Launch App
 ```bash
-streamlit run app_autobinning.py
+streamlit run app.py
 ```
 
 Your app will launch on **http://localhost:8501**, with live reload support.
