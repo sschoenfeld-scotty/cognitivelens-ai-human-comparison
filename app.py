@@ -182,7 +182,7 @@ if st.button("🚀 Train & Compare"):
                            labels=dict(x="AI Pred", y="Human Label", color="Count"))
         st.plotly_chart(fig_cm, config={"responsive": True})
 
-        if y_prob is not None and (y_true is not None or compare_to=="Ground truth (y_true)"):
+        if y_prob is not None and truth_test is not None:
             # ROC against ground truth only
             if (y_true is not None):
                 try:
