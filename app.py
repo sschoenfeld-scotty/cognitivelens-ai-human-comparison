@@ -137,9 +137,19 @@ target_y = y_true if (compare_to=="Ground truth (y_true)" and y_true is not None
 if st.button("🚀 Train & Compare"):
     try:
         strat = target_y if target_y.nunique()>1 else None
-        X_train, X_test, y_train, y_test, h_train, h_test = train_test_split(
-            X, target_y, y_h, test_size=test_size, random_state=seed, stratify=strat
+        split_inputs = [X, target_y, y_h]
+        if y_true is not None:
+            split_inputs.append(y_true)
+
+        split_data = train_test_split(
+            *split_inputs, test_size=test_size, random_state=seed, stratify=strat
         )
+
+        if y_true is not None:
+            X_train, X_test, y_train, y_test, h_train, h_test, truth_train, truth_test = split_data
+        else:
+            X_train, X_test, y_train, y_test, h_train, h_test = split_data
+            truth_train = truth_test = None
         pipe.fit(X_train, y_train)
         y_pred = pipe.predict(X_test)
         # proba if available
@@ -156,7 +166,7 @@ if st.button("🚀 Train & Compare"):
         with c1: st.metric("Agreement (AI vs Human)", f"{human_agree:.3f}")
         # If ground truth exists, compute accuracy
         if y_true is not None and compare_to=="Ground truth (y_true)":
-            acc = accuracy_score(y_test, y_pred)
+            acc = accuracy_score(truth_test, y_pred)
             with c2: st.metric("Accuracy (AI vs Truth)", f"{acc:.3f}")
         # Kappa
         try:
@@ -176,8 +186,8 @@ if st.button("🚀 Train & Compare"):
             # ROC against ground truth only
             if (y_true is not None):
                 try:
-                    fpr, tpr, _ = roc_curve(y_test, y_prob)
-                    auc = roc_auc_score(y_test, y_prob)
+                    fpr, tpr, _ = roc_curve(truth_test, y_prob)
+                    auc = roc_auc_score(truth_test, y_prob)
                     fig = px.area(x=fpr, y=tpr,
                                   labels={'x': 'False Positive Rate', 'y': 'True Positive Rate'},
                                   title=f'ROC Curve (AUC={auc:.3f})')
@@ -188,7 +198,7 @@ if st.button("🚀 Train & Compare"):
 
             # Calibration (Brier)
             try:
-                brier = brier_score_loss(y_test if y_true is not None else h_test, y_prob)
+                brier = brier_score_loss(truth_test, y_prob)
                 st.metric("Brier Score (lower is better)", f"{brier:.3f}")
                 hist = px.histogram(y_prob, nbins=20, title="Prediction Probabilities")
                 st.plotly_chart(hist, config={"responsive": True})
@@ -221,8 +231,8 @@ if st.button("🚀 Train & Compare"):
             grp = pd.DataFrame({"group": grp_col})
             grp["human"] = h_test.values
             grp["ai"] = y_pred
-            if y_true is not None:
-                grp["truth"] = y_test.values
+            if truth_test is not None:
+                grp["truth"] = truth_test.values
 
             rows = []
             for g, sub in grp.groupby("group", dropna=False):
@@ -230,7 +240,7 @@ if st.button("🚀 Train & Compare"):
                     continue
                 row = {"group": str(g), "n": len(sub),
                        "agree_ai_human": (sub["human"]==sub["ai"]).mean()}
-                if y_true is not None:
+                if truth_test is not None:
                     row["acc_ai_truth"] = (sub["truth"]==sub["ai"]).mean()
                     row["acc_human_truth"] = (sub["truth"]==sub["human"]).mean()
                 rows.append(row)
@@ -250,8 +260,8 @@ if st.button("🚀 Train & Compare"):
         out = X_test.copy()
         out["human_label"] = h_test
         out["ai_pred"] = y_pred
-        if y_true is not None:
-            out["y_true"] = y_test
+        if truth_test is not None:
+            out["y_true"] = truth_test
         if y_prob is not None:
             out["ai_prob"] = y_prob
         st.download_button("📥 Download evaluation rows (CSV)", data=out.to_csv(index=False), file_name="evaluation_rows.csv", mime="text/csv")
